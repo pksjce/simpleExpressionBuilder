@@ -1,0 +1,132 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<div id="builder">
+		</div>
+		<script src="jquery.js">
+		</script>
+		<script>
+			var options = {name:'filters',
+				options:[{
+					name: 'textBox',
+					endPoint:'textBox'
+				},{
+					name:'price',
+					options:[{
+						name:'between',
+						endPoint:'doubleTextBox'
+					},{
+						name:'lessThan',
+						endPoint:'textBox'
+					},{
+						name:'moreThan',
+						endPoint:'textBox'
+					}]
+				}
+			]};
+			var operator = [{
+				name:'and',
+				endPoint:"AND"
+			},{
+				name:'or',
+				endPoint:"OR"
+			}];
+			var ExpressionBuilder =  {
+				stackArray:[],
+				uniqueId:1,
+				filterId:1,
+				showUI: function(owned, endPoint, name){
+					var ownerNo = owned + this.uniqueId;
+					this.uniqueId++;
+					var options = this.getOptionsFromName(name);
+					var html = this.getHtml(ownerNo, endPoint , options);
+					$("#builder").append(html.join(''));
+					var nextButton = '#' + ownerNo + ' .nextButton';
+					var addButton = '#' + ownerNo + ' .addButton';
+					var self = this;
+					if($(nextButton).length > 0){
+						var next = $(nextButton);						
+						$(nextButton).click(function(){
+							var owner = next.attr('belongsto');	
+							var select = '#' + ownerNo + ' select';
+							var endPoint = $(select).val();											
+							var label = $('option:selected',select).html();
+							self.showUI(owner, endPoint, label);
+						});
+					} else if($(addButton).length > 0){
+						$(addButton).click(function(){
+							self.filter++;
+							self.showUI("filter" + self.filter, "array", "filters");
+						});
+					}
+				},
+				getOptionsFromName: function(name, option){
+					if(option == undefined){
+						option = options;
+					}
+					if(option.name == name){
+						return option.options;
+					} else {
+						var secOptions = option.options;
+						if(secOptions == undefined){
+							return null;
+						}
+						for(var i in secOptions){
+							var childOption = secOptions[i];
+							if(this.getOptionsFromName(name, childOption) == null){
+								continue;
+							} else {
+								return this.getOptionsFromName(name, childOption)
+							}
+						}
+					}
+				},
+				buildExpression: function(){
+
+				},
+				addOperatorDropDown: function(){
+					var html =[];
+					html.push("<select class='opExpr'>");
+					for(var i in operator){
+						var op = operator[i];
+						var value = op.endPoint;
+						html.push("<option value ='" + value + "'>" + op.name +"</option>");
+					}
+					html.push("</select>");
+					return html;
+				},
+				getHtml: function(ownerNo, endPoint, options){
+					var html = [];
+					html.push("<div id='" + ownerNo + "'>");
+
+					if(typeof endPoint == 'string' && endPoint !== 'array'){
+						if(endPoint == "textBox"){
+							html.push("<input type='textBox' id='" + ownerNo +"'>");
+						} else if(endPoint == "doubleTextBox"){
+							html.push("<input type='textBox' id='" + ownerNo +"bt1'>");
+							html.push("<input type='textBox' id='" + ownerNo +"bt2'>");
+						}
+						html.push(this.addOperatorDropDown())
+						html.push("<input type='button' value='Add another' class='addButton'>");
+					} else if(endPoint == 'array'){						
+						html.push("<select class='selectExpr'>");
+						for(var i in options){
+							var option = options[i];
+							var value = option.endPoint == undefined? 'array' : option.endPoint;
+							html.push("<option value ='" + value + "'>" + option.name +"</option>");
+						}
+						html.push("</select>");
+						html.push("<input type='button' belongsto= '" + ownerNo +"' value='Next' class='nextButton'>");
+					}
+					html.push('</div>');
+					return html;
+				}
+			};
+			$(function(){				
+				ExpressionBuilder.showUI("filter1", "array", 'filters');
+			});
+
+		</script>
+	</body>
+</html>
