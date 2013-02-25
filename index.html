@@ -73,6 +73,7 @@
 					$(pushDiv).append(html.join(''));
 					var nextButton = '#' + this.gfather + ' #' + ownerNo + ' #' + childNo + ' .nextButton';
 					var addButton = '#' + this.gfather + ' #' + ownerNo + ' #' + childNo + ' .addButton';
+					var removeButton = '#' + this.gfather + ' #' + ownerNo + ' #' + childNo + ' .removeButton';
 					var self = this;
 					if($(nextButton).length > 0){
 						var next = $(nextButton);						
@@ -86,11 +87,23 @@
 							this.childId++;
 							self.showUI(owner, endPoint, label, childNo);
 						});
-					} else if($(addButton).length > 0){
+					} ;
+					if($(addButton).length > 0){
 						$(addButton).click(function(){
 							self.filter++;
 							self.childId = 1;
 							self.showUI("filter", "array", "filters");
+						});
+					};
+					if($(removeButton).length > 0){
+						$(removeButton).click(function(){
+							$(pushDiv).remove();							
+							if($('#' + self.gfather).prop("childElementCount") == 0){
+								self.filterId = 1;
+								self.childId = 1;
+								self.showUI("filter", "array", 'filters', null,self.gfather);
+							}
+							//$(self.gfather).remove(pushDiv);
 						});
 					}
 				},
@@ -142,8 +155,9 @@
 							html.push("<input type='textBox' id='" + ownerNo +"bt1'>");
 							html.push("<input type='textBox' id='" + ownerNo +"bt2'>");
 						}
-						html.push(this.addOperatorDropDown())
+						html.push("<div>AND</div>")
 						html.push("<input type='button' value='Add another' class='addButton'>");
+						html.push("<input type='button' value='Remove' class='removeButton'>");
 					} else if(endPoint == 'array'){						
 						html.push("<select class='selectExpr'>");
 						for(var i in options){
