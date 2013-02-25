@@ -44,6 +44,7 @@
 				stackArray:[],
 				uniqueId:0,
 				filterId:1,
+				childId: 1,
 				gfather:null,
 				getOwnerNo: function(owned){
 					var ownerStuff = owned.split('z');
@@ -53,29 +54,42 @@
 					}
 					return owned + 'z' + this.uniqueId;
 				},
-				showUI: function(owned, endPoint, name, gfather){
+				showUI: function(owned, endPoint, name, childNo, gfather){
 					if(gfather !== undefined){
 						this.gfather = gfather;
 					}
-					var ownerNo = this.getOwnerNo(owned);
+					var ownerNo = owned;		
+					var pushDiv = null;			
+					if(childNo == undefined || childNo == null){						
+						ownerNo = this.getOwnerNo(owned);
+						childNo = "child" + this.childId;
+						this.childId++;
+						pushDiv = "#" + this.gfather;
+					} else {
+						pushDiv = "#" + this.gfather + " #" + ownerNo;
+					}
 					var options = this.getOptionsFromName(name);
-					var html = this.getHtml(ownerNo, endPoint , options);
-					$("#" + this.gfather).append(html.join(''));
-					var nextButton = '#' + this.gfather + ' #' + ownerNo + ' .nextButton';
-					var addButton = '#' + this.gfather + ' #' + ownerNo + ' .addButton';
+					var html = this.getHtml(ownerNo, endPoint , options, childNo);
+					$(pushDiv).append(html.join(''));
+					var nextButton = '#' + this.gfather + ' #' + ownerNo + ' #' + childNo + ' .nextButton';
+					var addButton = '#' + this.gfather + ' #' + ownerNo + ' #' + childNo + ' .addButton';
 					var self = this;
 					if($(nextButton).length > 0){
 						var next = $(nextButton);						
 						$(nextButton).click(function(){
-							var owner = next.attr('belongsto');	
-							var select = '#' + ownerNo + ' select';
+							var owner = next.attr('owner');
+							var child = next.attr('child');
+							var select = '#' + self.gfather + ' #' + owner + ' #' + child + ' select';
 							var endPoint = $(select).val();											
 							var label = $('option:selected',select).html();
-							self.showUI(owner, endPoint, label);
+							childNo = "child" + self.childId;
+							this.childId++;
+							self.showUI(owner, endPoint, label, childNo);
 						});
 					} else if($(addButton).length > 0){
 						$(addButton).click(function(){
 							self.filter++;
+							self.childId = 1;
 							self.showUI("filter", "array", "filters");
 						});
 					}
@@ -115,10 +129,12 @@
 					html.push("</select>");
 					return html;
 				},
-				getHtml: function(ownerNo, endPoint, options){
+				getHtml: function(ownerNo, endPoint, options, childNo){
 					var html = [];
-					html.push("<div id='" + ownerNo + "'>");
-
+					if(childNo.indexOf('1') > 0){
+						html.push("<div id='" + ownerNo + "'>");
+					}
+					html.push("<div id='" + childNo + "'>");
 					if(typeof endPoint == 'string' && endPoint !== 'array'){
 						if(endPoint == "textBox"){
 							html.push("<input type='textBox' id='" + ownerNo +"'>");
@@ -136,17 +152,20 @@
 							html.push("<option value ='" + value + "'>" + option.name +"</option>");
 						}
 						html.push("</select>");
-						html.push("<input type='button' belongsto= '" + ownerNo +"' value='Next' class='nextButton'>");
+						html.push("<input type='button' owner= '" + ownerNo +"' child = '" + childNo + "' value='Next' class='nextButton'>");
 					}
 					html.push('</div>');
+					if(childNo.indexOf('1') > 0){
+						html.push("</div>");
+					}
 					return html;
 				}
 			};
 			$(function(){		
 				var expressiona = new ExpressionBuilder();		
-				expressiona.showUI("filter", "array", 'filters', "buildera");
+				expressiona.showUI("filter", "array", 'filters', null, "buildera");
 				var expressionb = new ExpressionBuilder();
-				expressionb.showUI("filter", "array", 'filters', "builderb");
+				expressionb.showUI("filter", "array", 'filters', null, "builderb");
 			});
 
 		</script>
