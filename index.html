@@ -2,8 +2,13 @@
 	<head>
 	</head>
 	<body>
-		<div id="builder">
+		<div id="buildera">
 		</div>
+		<div>
+			OR
+		</div>
+		<div id="builderb">
+		</div>		
 		<script src="jquery.js">
 		</script>
 		<script>
@@ -32,18 +37,32 @@
 				name:'or',
 				endPoint:"OR"
 			}];
-			var ExpressionBuilder =  {
+			function ExpressionBuilder(){
+
+			}
+			ExpressionBuilder.prototype =  {
 				stackArray:[],
-				uniqueId:1,
+				uniqueId:0,
 				filterId:1,
-				showUI: function(owned, endPoint, name){
-					var ownerNo = owned + this.uniqueId;
+				gfather:null,
+				getOwnerNo: function(owned){
+					var ownerStuff = owned.split('z');
 					this.uniqueId++;
+					if(ownerStuff.length > 1){						
+						return ownerStuff[0] + 'z' + this.uniqueId;						
+					}
+					return owned + 'z' + this.uniqueId;
+				},
+				showUI: function(owned, endPoint, name, gfather){
+					if(gfather !== undefined){
+						this.gfather = gfather;
+					}
+					var ownerNo = this.getOwnerNo(owned);
 					var options = this.getOptionsFromName(name);
 					var html = this.getHtml(ownerNo, endPoint , options);
-					$("#builder").append(html.join(''));
-					var nextButton = '#' + ownerNo + ' .nextButton';
-					var addButton = '#' + ownerNo + ' .addButton';
+					$("#" + this.gfather).append(html.join(''));
+					var nextButton = '#' + this.gfather + ' #' + ownerNo + ' .nextButton';
+					var addButton = '#' + this.gfather + ' #' + ownerNo + ' .addButton';
 					var self = this;
 					if($(nextButton).length > 0){
 						var next = $(nextButton);						
@@ -57,7 +76,7 @@
 					} else if($(addButton).length > 0){
 						$(addButton).click(function(){
 							self.filter++;
-							self.showUI("filter" + self.filter, "array", "filters");
+							self.showUI("filter", "array", "filters");
 						});
 					}
 				},
@@ -123,8 +142,11 @@
 					return html;
 				}
 			};
-			$(function(){				
-				ExpressionBuilder.showUI("filter1", "array", 'filters');
+			$(function(){		
+				var expressiona = new ExpressionBuilder();		
+				expressiona.showUI("filter", "array", 'filters', "buildera");
+				var expressionb = new ExpressionBuilder();
+				expressionb.showUI("filter", "array", 'filters', "builderb");
 			});
 
 		</script>
